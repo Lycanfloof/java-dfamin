@@ -2,6 +2,7 @@ package model;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public abstract class DFA {
@@ -96,7 +97,7 @@ public abstract class DFA {
 
     public abstract void minimizeFDA();
 
-    private Collection<String> getUnreachableStates() {
+    protected Collection<String> getUnreachableStates() {
         Collection<String> reachableStates = getReachableStates();
         Collection<String> unreachableStates = new LinkedList<>();
 
@@ -109,7 +110,7 @@ public abstract class DFA {
         return unreachableStates;
     }
 
-    private Collection<String> getReachableStates() {
+    protected Collection<String> getReachableStates() {
         LinkedList<String> reachableStates = new LinkedList<>();
         LinkedList<String> queue = new LinkedList<>();
 
@@ -129,7 +130,56 @@ public abstract class DFA {
         return reachableStates;
     }
 
-    private void getEquivalentStates(Collection<Collection<String>> partition) {
-        //TODO.
+    protected List<List<String>> getEquivalentPartitions(List<List<String>> partition) {
+        Map<String, Map<Character, String>> matrix;
+        List<List<String>> oldPartition;
+        List<List<String>> newPartition = partition;
+        do {
+            oldPartition = newPartition;
+            matrix = getTransitionMatrixWithPartitions(oldPartition);
+            newPartition = getKEquivalentPartition(matrix);
+        } while (!oldPartition.equals(newPartition));
+        return newPartition;
+    }
+
+    protected Map<String, Map<Character, String>> getTransitionMatrixWithPartitions(List<List<String>> partition) {
+        Map<String, Map<Character, String>> matrixCopy = Map.copyOf(transitionMatrix);
+        matrixCopy.clear();
+        for (String state : states) {
+            Map<Character, String> newCopy = Map.copyOf(transitionMatrix.get(state));
+            for (Character input : inAlphabet) {
+                if (newCopy.keySet().contains(input)) {
+                    String group = AuxMethods.getGroupInMatrix(newCopy.get(input), partition);
+                    newCopy.put(input, group);
+                }
+            }
+            matrixCopy.put(state, newCopy);
+        }
+        return matrixCopy;
+    }
+
+    protected List<List<String>> getKEquivalentPartition(Map<String, Map<Character, String>> matrix) {
+        List<List<String>> groups = new LinkedList<>();
+
+        for (String i : states) {
+            if (groups.size() == 0 || !AuxMethods.isContainedInMatrix(i, groups)) {
+                Map<Character, String> transitionMapI = matrix.get(i);
+
+                List<String> newGroup = new LinkedList<>();
+                newGroup.add(i);
+
+                for (String j : states) {
+                    Map<Character, String> transitionMapJ = matrix.get(j);
+
+                    if (i != j && transitionMapI.equals(transitionMapJ)) {
+                        newGroup.add(j);
+                    }
+                }
+                
+                groups.add(newGroup);
+            }
+        }
+
+        return groups;
     }
 }

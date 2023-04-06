@@ -1,6 +1,8 @@
 package model;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class MooreDFA extends DFA {
@@ -33,5 +35,30 @@ public class MooreDFA extends DFA {
     @Override
     public void minimizeFDA() {
         // TODO.
+    }
+    
+    protected List<List<String>> getZeroEquivalentPartitions() {
+        List<List<String>> groups = new LinkedList<>();
+
+        for (String i : states) {
+            if (groups.size() == 0 || !AuxMethods.isContainedInMatrix(i, groups)) {
+                Character outputI = outFunctions.get(i);
+
+                List<String> newGroup = new LinkedList<>();
+                newGroup.add(i);
+
+                for (String j : states) {
+                    Character outputJ = outFunctions.get(j);
+
+                    if (i != j && outputI.equals(outputJ)) {
+                        newGroup.add(j);
+                    }
+                }
+                
+                groups.add(newGroup);
+            }
+        }
+
+        return groups;
     }
 }
