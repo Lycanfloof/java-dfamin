@@ -1,6 +1,7 @@
 package model;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
 
 public abstract class DFA {
@@ -92,4 +93,39 @@ public abstract class DFA {
 
     // Needs to be overwritten in the implementations. Parameter "input" might not be used.
     public abstract void setOutFunction(String state, Character input, Character output);
+
+    public abstract void minimizeFDA();
+
+    private Collection<String> getUnreachableStates() {
+        Collection<String> reachableStates = getReachableStates();
+        Collection<String> unreachableStates = new LinkedList<>();
+
+        for (String state : states) {
+            if (!reachableStates.contains(state)) {
+                unreachableStates.add(state);
+            }
+        }
+
+        return unreachableStates;
+    }
+
+    private Collection<String> getReachableStates() {
+        LinkedList<String> reachableStates = new LinkedList<>();
+        LinkedList<String> queue = new LinkedList<>();
+
+        reachableStates.add(initialState);
+        queue.addFirst(initialState);
+
+        while (!queue.isEmpty()) {
+            String state = queue.removeLast();
+            for (String neighborState : transitionMatrix.get(state).values()) {
+                if (!reachableStates.contains(neighborState)) {
+                    reachableStates.add(neighborState);
+                    queue.addFirst(neighborState);
+                }
+            }
+        }
+
+        return reachableStates;
+    }
 }

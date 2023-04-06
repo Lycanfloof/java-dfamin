@@ -29,4 +29,9 @@ public class MooreDFA extends DFA {
             outFunctions.put(state, output);
         }
     }
+
+    @Override
+    public void minimizeFDA() {
+        // TODO.
+    }
 }

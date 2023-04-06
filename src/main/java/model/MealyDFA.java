@@ -47,4 +47,9 @@ public class MealyDFA extends DFA {
             outputMatrix.get(state).put(input, output);
         }
     }
+
+    @Override
+    public void minimizeFDA() {
+        // TODO.
+    }
 }
