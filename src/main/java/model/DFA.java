@@ -128,4 +128,8 @@ public abstract class DFA {
 
         return reachableStates;
     }
+
+    private void getEquivalentStates(Collection<Collection<String>> partition) {
+        //TODO.
+    }
 }

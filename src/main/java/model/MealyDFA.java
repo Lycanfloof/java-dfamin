@@ -1,6 +1,7 @@
 package model;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
 
 public class MealyDFA extends DFA {
@@ -51,5 +52,30 @@ public class MealyDFA extends DFA {
     @Override
     public void minimizeFDA() {
         // TODO.
+    }
+
+    private Collection<Collection<String>> getZeroEquivalentStates() {
+        Collection<Collection<String>> groups = new LinkedList<>();
+
+        for (String i : states) {
+            if (groups.size() == 0 || !AuxMethods.isContainedInMatrix(i, groups)) {
+                Map<Character, Character> outputMapI = outputMatrix.get(i);
+
+                Collection<String> newGroup = new LinkedList<>();
+                newGroup.add(i);
+
+                for (String j : states) {
+                    Map<Character, Character> outputMapJ = outputMatrix.get(j);
+
+                    if (i != j && outputMapI.equals(outputMapJ)) {
+                        newGroup.add(j);
+                    }
+                }
+                
+                groups.add(newGroup);
+            }
+        }
+
+        return groups;
     }
 }
