@@ -59,6 +59,12 @@ public abstract class DFA {
         }
     }
 
+    public void deleteStateCollection(Collection<String> states) {
+        states.forEach(state -> {
+            deleteState(state);
+        });
+    }
+
     public void setInitialState(String initialState) {
         if (states.contains(initialState)) {
             this.initialState = initialState;
@@ -95,7 +101,15 @@ public abstract class DFA {
     // Needs to be overwritten in the implementations. Parameter "input" might not be used.
     public abstract void setOutFunction(String state, Character input, Character output);
 
-    public abstract void minimizeFDA();
+    public void minimizeFDA() {
+        deleteStateCollection(getUnreachableStates());
+        List<List<String>> initialPartition = getZeroEquivalentPartitions();
+        List<List<String>> partition = getEquivalentPartitions(initialPartition);
+        partition.forEach(group -> {
+            group.remove(0);
+            deleteStateCollection(group);
+        });
+    }
 
     protected Collection<String> getUnreachableStates() {
         Collection<String> reachableStates = getReachableStates();
@@ -129,6 +143,8 @@ public abstract class DFA {
 
         return reachableStates;
     }
+
+    protected abstract List<List<String>> getZeroEquivalentPartitions();
 
     protected List<List<String>> getEquivalentPartitions(List<List<String>> partition) {
         Map<String, Map<Character, String>> matrix;

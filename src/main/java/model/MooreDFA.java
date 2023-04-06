@@ -31,12 +31,8 @@ public class MooreDFA extends DFA {
             outFunctions.put(state, output);
         }
     }
-
-    @Override
-    public void minimizeFDA() {
-        // TODO.
-    }
     
+    @Override
     protected List<List<String>> getZeroEquivalentPartitions() {
         List<List<String>> groups = new LinkedList<>();
 

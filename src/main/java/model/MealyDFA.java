@@ -51,10 +51,6 @@ public class MealyDFA extends DFA {
     }
 
     @Override
-    public void minimizeFDA() {
-        //TODO.
-    }
-
     protected List<List<String>> getZeroEquivalentPartitions() {
         List<List<String>> groups = new LinkedList<>();
 
