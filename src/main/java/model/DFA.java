@@ -72,7 +72,9 @@ public abstract class DFA {
     }
 
     public void addToInAlphabet(char input) {
-        inAlphabet.add(input);
+        if (!inAlphabet.contains(input)) {
+            inAlphabet.add(input);
+        }
     }
 
     // Needs to be overwritten in the MealyDFA implementation.
@@ -86,7 +88,9 @@ public abstract class DFA {
     }
 
     public void addToOutAlphabet(char output) {
-        outAlphabet.add(output);
+        if (!outAlphabet.contains(output)) {
+            outAlphabet.add(output);
+        }
     }
 
     // Needs to be overwritten in the implementations.
