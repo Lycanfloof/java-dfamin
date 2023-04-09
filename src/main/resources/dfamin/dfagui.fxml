@@ -159,7 +159,7 @@
                   </Accordion>
                </items>
             </SplitPane>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0" />
+            <AnchorPane fx:id="machineView" onMouseClicked="#machineViewClick" prefHeight="200.0" prefWidth="200.0" />
          </items>
       </SplitPane>
   </children>

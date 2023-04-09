@@ -43,8 +43,9 @@ public abstract class DFA {
 
     // Needs to be overwritten in the implementations. Parameter "outputMap" might not be used.
     public void addState(String state, Map<Character, String> transitionMap, Map<Character, Character> outputMap) {
-        states.add(state);
-        transitionMatrix.put(state, transitionMap);
+        if (!states.contains(state)) {
+            states.add(state);
+            transitionMatrix.put(state, transitionMap);}
     }
 
     public void deleteState(String state) {
