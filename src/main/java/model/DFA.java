@@ -106,13 +106,15 @@ public abstract class DFA {
     public abstract void setOutFunction(String state, Character input, Character output);
 
     public void minimizeFDA() {
-        deleteStateCollection(getUnreachableStates());
-        List<List<String>> initialPartition = getZeroEquivalentPartitions();
-        List<List<String>> partition = getEquivalentPartitions(initialPartition);
-        partition.forEach(group -> {
-            group.remove(0);
-            deleteStateCollection(group);
-        });
+        if (!states.isEmpty()) {
+            deleteStateCollection(getUnreachableStates());
+            List<List<String>> initialPartition = getZeroEquivalentPartitions();
+            List<List<String>> partition = getEquivalentPartitions(initialPartition);
+            partition.forEach(group -> {
+                group.remove(0);
+                deleteStateCollection(group);
+            });
+        }
     }
 
     protected Collection<String> getUnreachableStates() {

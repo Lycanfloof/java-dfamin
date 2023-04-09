@@ -65,7 +65,7 @@
         </Menu>
         <Menu mnemonicParsing="false" text="Transform">
           <items>
-            <MenuItem mnemonicParsing="false" text="Minimize Automaton" />
+            <MenuItem fx:id="minimizeItem" mnemonicParsing="false" onAction="#minimizeFDA" text="Minimize Automaton" />
           </items>
         </Menu>
       </menus>

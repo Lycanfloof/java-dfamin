@@ -13,6 +13,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
 import javafx.stage.Stage;
@@ -38,6 +39,9 @@ public class DFAController {
     private Label outputLabel;
 
     @FXML
+    private MenuItem minimizeItem;
+
+    @FXML
     private Button stateButton;
 
     @FXML
@@ -45,16 +49,16 @@ public class DFAController {
 
     @FXML
     private Button addInputButton;
-    
+
     @FXML
     private Button addOutputButton;
-    
+
     @FXML
     private Button removeInputButton;
-    
+
     @FXML
     private Button removeOutputButton;
-    
+
     private DFA dfa;
 
     public DFA getDfa() {
@@ -80,6 +84,7 @@ public class DFAController {
     }
 
     private void areButtonsDisabled(boolean isDisabled) {
+        minimizeItem.setDisable(isDisabled);
         stateButton.setDisable(isDisabled);
         transitionButton.setDisable(isDisabled);
         addInputButton.setDisable(isDisabled);
@@ -93,8 +98,11 @@ public class DFAController {
         outputLabel.setText(dfa.getOutAlphabet().toString());
     }
 
-    public void minimizeFDA() {
-
+    @FXML
+    public void minimizeFDA(ActionEvent event) {
+        if (dfa != null) {
+            dfa.minimizeFDA();
+        }
     }
 
     @FXML
@@ -121,17 +129,17 @@ public class DFAController {
         if (dfa != null) {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("prompt.fxml"));
             Parent root = loader.load();
-    
+
             PromptController controller = ((PromptController) loader.getController());
             controller.setConfirmText(text);
             controller.setDfa(dfa);
             controller.setChangingInput(isChangingInput);
             controller.setAdding(isAdding);
-    
+
             Stage newStage = new Stage();
             newStage.setScene(new Scene(root));
             newStage.showAndWait();
-    
+
             updateAlphabets();
         }
     }
