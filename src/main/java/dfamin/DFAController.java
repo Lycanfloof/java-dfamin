@@ -54,6 +54,9 @@ public class DFAController {
 
     @FXML
     private Button stateButton;
+    
+    @FXML
+    private Button initialStateButton;
 
     @FXML
     private Button transitionButton;
@@ -84,6 +87,8 @@ public class DFAController {
     private Map<QuadCurve, Tuple<Circle, Text>> transGraphics;
 
     private List<Circle> pendingTransition;
+
+    private Circle initialStateGraphic;
 
     @FXML
     void createMealyDFA(ActionEvent event) {
@@ -122,6 +127,7 @@ public class DFAController {
         removeInputButton.setDisable(isDisabled);
         addOutputButton.setDisable(isDisabled);
         removeOutputButton.setDisable(isDisabled);
+        initialStateButton.setDisable(isDisabled);
     }
 
     private void updateAlphabets() {
@@ -176,7 +182,8 @@ public class DFAController {
         }
     }
 
-    // This seriously NEEDS refactoring (Everything needs refactoring, heck).
+    // This seriously NEEDS refactoring (Everything NEEDS refactoring, heck).
+    // ALERT! ALERT! THIS WHOLE PROGRAM IS SPAGHETTI CODE! (I needed to get this done really quickly lol).
     @FXML
     void machineViewClick(MouseEvent event) throws IOException {
         Node n = event.getPickResult().getIntersectedNode();
@@ -206,6 +213,20 @@ public class DFAController {
                     System.out.println(((MealyDFA) dfa).getOutputMatrix().toString());
                 } else {
                     System.out.println(((MooreDFA) dfa).getOutFunctions().toString());
+                }
+                System.out.println(dfa.getInitialState());
+            }
+        } else if (initialStateButton.isFocused()) {
+            if (event.getButton() == MouseButton.PRIMARY && n instanceof Circle) {
+                String newInitialState = statesView.get(n).getText().split("/")[0];
+                dfa.setInitialState(newInitialState);
+
+                if (dfa.getInitialState() == newInitialState) {
+                    if (initialStateGraphic != null) {
+                        initialStateGraphic.setFill(Color.WHITE);
+                    }
+                    ((Circle) n).setFill(Color.GREY);
+                    initialStateGraphic = ((Circle) n);
                 }
             }
         }

@@ -57,6 +57,9 @@ public abstract class DFA {
                     transitionMap.values().remove(state);
                 }
             });
+            if (state.equals(initialState)) {
+                initialState = null;
+            }
         }
     }
 
