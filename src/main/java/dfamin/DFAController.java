@@ -92,6 +92,7 @@ public class DFAController {
         treeView.setRoot(new TreeItem<>("Mealy Automaton"));
         updateAlphabets();
         areButtonsDisabled(false);
+        reset();
     }
 
     @FXML
@@ -101,6 +102,16 @@ public class DFAController {
         treeView.setRoot(new TreeItem<>("Moore Automaton"));
         updateAlphabets();
         areButtonsDisabled(false);
+        reset();
+    }
+
+    public void reset() {
+        stateCount = 0;
+        pendingTransition.clear();
+        statesView.clear();
+        transitionsView.clear();
+        transGraphics.clear();
+        machineView.getChildren().clear();
     }
 
     private void areButtonsDisabled(boolean isDisabled) {
@@ -183,7 +194,7 @@ public class DFAController {
                     pendingTransition.add((Circle) n);
                 } else if (pendingTransition.size() >= 2) {
                     Character c = openTransitionPrompt();
-                    if (c != null) {
+                    if (c != null && c != ' ') {
                         addTransitionInView(c, event.getX(), event.getY());
                     }
                     pendingTransition.clear();
@@ -191,7 +202,11 @@ public class DFAController {
             }else {
                 System.out.println(dfa.getStates().toString());
                 System.out.println(dfa.getTransitionMatrix().toString());
-                System.out.println(((MealyDFA) dfa).getOutputMatrix().toString());
+                if (dfa instanceof MealyDFA) {
+                    System.out.println(((MealyDFA) dfa).getOutputMatrix().toString());
+                } else {
+                    System.out.println(((MooreDFA) dfa).getOutFunctions().toString());
+                }
             }
         }
     }
@@ -217,6 +232,12 @@ public class DFAController {
             controller.setPendingTransition(ls);
             controller.setPendingInput(pendingInput);
 
+            if (dfa instanceof MooreDFA) {
+                controller.setDisableOutputText(true);
+            } else {
+                controller.setDisableOutputText(false);
+            }
+
             Stage newStage = new Stage();
             newStage.setScene(new Scene(root));
             newStage.initModality(Modality.APPLICATION_MODAL);
@@ -229,18 +250,27 @@ public class DFAController {
         }
     }
 
-    private void addState(Double x, Double y) {
+    private void addState(Double x, Double y) throws IOException {
         if (dfa != null) {
             String id = String.valueOf("q" + stateCount);
-            stateCount++;
+            String gText = id;
 
+            if (dfa instanceof MooreDFA) {
+                openStatePrompt(id);
+                if (((MooreDFA) dfa).getOutFunction(id) == null) {
+                    return;
+                }
+                gText += "/" + ((MooreDFA) dfa).getOutFunction(id);
+            }
+            
             dfa.addState(id, new Hashtable<>(), new Hashtable<>());
+            stateCount++;
 
             Circle c = new Circle(x, y, 25);
             c.setFill(Color.WHITE);
             c.setStroke(Color.BLACK);
 
-            Text t = new Text(x - 8, y + 4, id);
+            Text t = new Text(x - 8, y + 4, gText);
             t.setDisable(true);
 
             statesView.put(c, t);
@@ -248,9 +278,26 @@ public class DFAController {
         }
     }
 
+    private void openStatePrompt(String state) throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("state-prompt.fxml"));
+        Parent root = loader.load();
+
+        StatePromptController controller = ((StatePromptController) loader.getController());
+        controller.setDfa(dfa);
+        controller.setState(state);
+        
+        Stage newStage = new Stage();
+        newStage.setScene(new Scene(root));
+        newStage.initModality(Modality.APPLICATION_MODAL);
+        newStage.showAndWait();
+    }
+
     private void deleteState(Node n) {
         if (dfa != null) {
             String id = statesView.get(n).getText();
+            if (dfa instanceof MooreDFA) {
+                id = id.split("/")[0];
+            }
             dfa.deleteState(id);
 
             machineView.getChildren().remove(n);
@@ -315,18 +362,20 @@ public class DFAController {
 
                 Character output;
 
-                if (dfa instanceof MealyDFA) {
-                    output = ((MealyDFA) dfa).getOutFunction(state, input);
-                } else {
-                    output = ((MooreDFA) dfa).getOutFunction(state);
-                }
-
                 Double point1 = sx + (ex - sx) / 2;
                 Double point2 = sy + (ey - sy) / 2;
                 Double point11 = point1 + (x - point1) * 0.6;
                 Double point22 = point2 + (y - point2) * 0.6;
 
-                Text text = new Text(point11, point22, input + "/" + output);
+                Text text;
+
+                if (dfa instanceof MealyDFA) {
+                    output = ((MealyDFA) dfa).getOutFunction(state, input);
+                    text = new Text(point11, point22, input + "/" + output);
+                } else {
+                    output = ((MooreDFA) dfa).getOutFunction(state);
+                    text = new Text(point11, point22, input + "");
+                }
 
                 transGraphics.put(curve, new Tuple<>(pointer, text));
 
@@ -357,9 +406,10 @@ public class DFAController {
 
     @FXML
     void initialize() {
-        pendingTransition = new ArrayList<>();
         stateCount = 0;
         areButtonsDisabled(true);
+
+        pendingTransition = new ArrayList<>();
         statesView = new Hashtable<>();
         transitionsView = new Hashtable<>();
         transGraphics = new Hashtable<>();

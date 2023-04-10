@@ -9,8 +9,9 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import model.DFA;
+import model.MooreDFA;
 
-public class PromptController {
+public class StatePromptController {
 
     @FXML
     private ResourceBundle resources;
@@ -26,9 +27,7 @@ public class PromptController {
 
     private DFA dfa;
 
-    private boolean isChangingInput;
-
-    private boolean isAdding;
+    private String state;
 
     public void setConfirmText(String text) {
         confirmButton.setText(text);
@@ -38,31 +37,16 @@ public class PromptController {
         this.dfa = dfa;
     }
 
-    public void setChangingInput(boolean isChangingInput) {
-        this.isChangingInput = isChangingInput;
-    }
-
-    public void setAdding(boolean isAdding) {
-        this.isAdding = isAdding;
+    public void setState(String state) {
+        this.state = state;
     }
 
     // Needs to be refactored.
     @FXML
     void confirm(ActionEvent event) {
-        boolean isValid = textField.getText().length() == 1;
-        if (isValid && isAdding) {
-            if (isChangingInput) {
-                dfa.addToInAlphabet(textField.getText().charAt(0));
-            } else {
-                dfa.addToOutAlphabet(textField.getText().charAt(0));
-            }
-            close(event);
-        } else if (isValid) {
-            if (isChangingInput) {
-                dfa.removeFromInAlphabet(textField.getText().charAt(0));
-            } else {
-                dfa.removeFromOutAlphabet(textField.getText().charAt(0));
-            }
+        Character c = (!textField.getText().isBlank()) ? textField.getText().charAt(0) : null;
+        if (c != null && dfa.getOutAlphabet().contains(c)) {
+            ((MooreDFA) dfa).setOutFunctionUnsafe(state, ' ', c);
             close(event);
         }
     }
@@ -75,7 +59,7 @@ public class PromptController {
 
     @FXML
     void initialize() {
-
+        setConfirmText("Add");
     }
 
 }

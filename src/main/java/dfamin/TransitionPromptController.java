@@ -55,21 +55,22 @@ public class TransitionPromptController {
 
     @FXML
     void confirm(ActionEvent event) {
-        Character input = inputText.getText().charAt(0);
-        pendingInput.add(input);
+        Character input = (!inputText.getText().isBlank()) ? inputText.getText().charAt(0) : null;
+        Character output = (!outputText.getText().isBlank()) ? outputText.getText().charAt(0) : null;
 
-        Character output = outputText.getText().charAt(0);
-
-        boolean cond = dfa.getTransitionMatrix().get(pendingTransition.get(0)).get(input) == null;
-        
-        if (cond && dfa.getInAlphabet().contains(input) && dfa.getOutAlphabet().contains(output)) {
-            dfa.setTransFunction(pendingTransition.get(0), input, pendingTransition.get(1));
-            if (!outputText.isDisable()) {
-                dfa.setOutFunction(pendingTransition.get(0), input, output);
+        if (input != null && output != null) {
+            pendingInput.clear();
+            pendingInput.add(input);
+            boolean cond = dfa.getTransitionMatrix().get(pendingTransition.get(0)).get(input) == null;
+    
+            if (cond && dfa.getInAlphabet().contains(input) && (dfa.getOutAlphabet().contains(output) || outputText.isDisable())) {
+                dfa.setTransFunction(pendingTransition.get(0), input, pendingTransition.get(1));
+                if (!outputText.isDisable()) {
+                    dfa.setOutFunction(pendingTransition.get(0), input, output);
+                }
+                close(event);
             }
         }
-
-        close(event);
     }
 
     @FXML

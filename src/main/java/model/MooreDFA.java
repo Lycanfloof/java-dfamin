@@ -16,6 +16,14 @@ public class MooreDFA extends DFA {
     }
 
     @Override
+    public void deleteState(String state) {
+        if (states.contains(state)) {
+            outFunctions.remove(state);
+        }
+        super.deleteState(state);
+    }
+
+    @Override
     public void removeFromOutAlphabet(char output) {
         if (outAlphabet.contains(output)) {
             outAlphabet.remove(output);
@@ -32,6 +40,12 @@ public class MooreDFA extends DFA {
     @Override
     public void setOutFunction(String state, Character input, Character output) {
         if (states.contains(state) && outAlphabet.contains(output)) {
+            outFunctions.put(state, output);
+        }
+    }
+
+    public void setOutFunctionUnsafe(String state, Character input, Character output) {
+        if (outAlphabet.contains(output)) {
             outFunctions.put(state, output);
         }
     }
@@ -60,5 +74,9 @@ public class MooreDFA extends DFA {
         }
 
         return groups;
+    }
+
+    public Map<String, Character> getOutFunctions() {
+        return outFunctions;
     }
 }
