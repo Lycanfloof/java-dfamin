@@ -34,10 +34,6 @@ public class PromptController {
         confirmButton.setText(text);
     }
 
-    public DFA getDfa() {
-        return dfa;
-    }
-
     public void setDfa(DFA dfa) {
         this.dfa = dfa;
     }
