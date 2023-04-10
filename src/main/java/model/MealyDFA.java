@@ -43,6 +43,10 @@ public class MealyDFA extends DFA {
         }
     }
 
+    public Character getOutFunction(String state, Character input) {
+        return outputMatrix.get(state).get(input);
+    }
+
     @Override
     public void setOutFunction(String state, Character input, Character output) {
         if (states.contains(state) && inAlphabet.contains(input) && outAlphabet.contains(output)) {

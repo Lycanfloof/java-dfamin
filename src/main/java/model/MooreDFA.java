@@ -25,6 +25,10 @@ public class MooreDFA extends DFA {
         }
     }
 
+    public Character getOutFunction(String state) {
+        return outFunctions.get(state);
+    }
+
     @Override
     public void setOutFunction(String state, Character input, Character output) {
         if (states.contains(state) && outAlphabet.contains(output)) {

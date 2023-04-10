@@ -24,9 +24,9 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.shape.Polygon;
 import javafx.scene.shape.QuadCurve;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.DFA;
 import model.MealyDFA;
@@ -80,6 +80,8 @@ public class DFAController {
     private Map<Circle, Text> statesView;
 
     private Map<QuadCurve, Tuple<String, Character>> transitionsView;
+
+    private Map<QuadCurve, Tuple<Circle, Text>> transGraphics;
 
     private List<Circle> pendingTransition;
 
@@ -156,35 +158,42 @@ public class DFAController {
 
             Stage newStage = new Stage();
             newStage.setScene(new Scene(root));
+            newStage.initModality(Modality.APPLICATION_MODAL);
             newStage.showAndWait();
 
             updateAlphabets();
         }
     }
 
-    //This seriously NEEDS refactoring (Everything needs refactoring, heck).
+    // This seriously NEEDS refactoring (Everything needs refactoring, heck).
     @FXML
     void machineViewClick(MouseEvent event) throws IOException {
         Node n = event.getPickResult().getIntersectedNode();
         if (stateButton.isFocused()) {
             if (event.getButton() == MouseButton.PRIMARY) {
                 addState(event.getX(), event.getY());
-            }else if (event.getButton() == MouseButton.SECONDARY) {
-                if (n instanceof Circle){
+            } else if (event.getButton() == MouseButton.SECONDARY) {
+                if (n instanceof Circle) {
                     deleteState(n);
                 }
             }
-        }else if (transitionButton.isFocused()) {
+        } else if (transitionButton.isFocused()) {
             if (event.getButton() == MouseButton.PRIMARY) {
                 if (pendingTransition.size() < 2 && n instanceof Circle) {
                     pendingTransition.add((Circle) n);
-                }else if (pendingTransition.size() >= 2) {
+                } else if (pendingTransition.size() >= 2) {
                     Character c = openTransitionPrompt();
-                    addTransitionInView(c, event.getX(), event.getY());
+                    if (c != null) {
+                        addTransitionInView(c, event.getX(), event.getY());
+                    }
                     pendingTransition.clear();
                 }
             }
         }
+    }
+
+    @FXML void clearTransition(MouseEvent event) {
+        pendingTransition.clear();
     }
 
     private Character openTransitionPrompt() throws IOException {
@@ -206,9 +215,14 @@ public class DFAController {
 
             Stage newStage = new Stage();
             newStage.setScene(new Scene(root));
+            newStage.initModality(Modality.APPLICATION_MODAL);
             newStage.showAndWait();
         }
-        return pendingInput.get(0);
+        if (pendingInput.size() > 0) {
+            return pendingInput.get(0);
+        } else {
+            return null;
+        }
     }
 
     private void addState(Double x, Double y) {
@@ -224,7 +238,7 @@ public class DFAController {
 
             Text t = new Text(x - 8, y + 4, id);
             t.setDisable(true);
-            
+
             statesView.put(c, t);
             machineView.getChildren().addAll(c, t);
         }
@@ -234,12 +248,12 @@ public class DFAController {
         if (dfa != null) {
             String id = statesView.get(n).getText();
             dfa.deleteState(id);
-            
+
             machineView.getChildren().remove(n);
             machineView.getChildren().remove(statesView.get(n));
 
             statesView.remove(n);
-            
+
             for (Tuple<String, Character> tuple : transitionsView.values()) {
                 if (tuple.getFirst() == id) {
                     transitionsView.values().remove(tuple);
@@ -251,25 +265,71 @@ public class DFAController {
     private void addTransitionInView(Character input, double x, double y) {
         Circle sourceCircle = pendingTransition.get(0);
         Circle destinationCircle = pendingTransition.get(1);
-        
+
         String state = statesView.get(sourceCircle).getText();
+
+        QuadCurve curv = null;
         
-        Double sx = sourceCircle.getCenterX();
-        Double sy = sourceCircle.getCenterY();
-        Double ex = destinationCircle.getCenterX();
-        Double ey = destinationCircle.getCenterY();
+        for (QuadCurve q : transitionsView.keySet()) {
+            Tuple<String, Character> t = transitionsView.get(q);
+            String st = t.getFirst();
+            Character in = t.getSecond();
+            if (state == st && in == input) {
+                curv = q;
+                break;
+            }
+        }
+        
+        if (dfa.getTransitionMatrix().get(state).get(input) != null) {
+            if (curv == null) {
+                Double sx = sourceCircle.getCenterX();
+                Double sy = sourceCircle.getCenterY();
+                Double ex = destinationCircle.getCenterX();
+                Double ey = destinationCircle.getCenterY();
 
-        Double[] out1 = calculateDistances(25.0, sx, sy, x, y);
-        Double[] out2 = calculateDistances(25.0, ex, ey, x, y);
+                Double[] out1 = calculateDistances(25.0, sx, sy, x, y);
+                Double[] out2 = calculateDistances(25.0, ex, ey, x, y);
 
-        QuadCurve curve = new QuadCurve(sx + out1[0], sy - out1[1], x, y, ex + out2[0], ey - out2[1]);
-        curve.setFill(null);
-        curve.setStroke(Color.BLACK);
-        curve.setStrokeWidth(1);
+                QuadCurve curve = new QuadCurve(sx + out1[0], sy - out1[1], x, y, ex + out2[0], ey - out2[1]);
+                curve.setFill(null);
+                curve.setStroke(Color.BLACK);
+                curve.setStrokeWidth(1);
 
-        transitionsView.put(curve, new Tuple<String,Character>(state, input));
+                transitionsView.put(curve, new Tuple<String, Character>(state, input));
 
-        machineView.getChildren().addAll(curve);
+                Circle pointer = new Circle(ex + out2[0], ey - out2[1], 5);
+                pointer.setFill(Color.WHITE);
+                pointer.setStroke(Color.BLACK);
+                pointer.setStrokeWidth(1);
+
+                Character output;
+
+                if (dfa instanceof MealyDFA) {
+                    output = ((MealyDFA) dfa).getOutFunction(state, input);
+                } else {
+                    output = ((MooreDFA) dfa).getOutFunction(state);
+                }
+
+                Double point1 = sx + (ex - sx) / 2;
+                Double point2 = sy + (ey - sy) / 2;
+                Double point11 = point1 + (x - point1) * 0.6;
+                Double point22 = point2 + (y - point2) * 0.6;
+
+                Text text = new Text(point11, point22, input + "/" + output);
+
+                transGraphics.put(curve, new Tuple<>(pointer, text));
+
+                machineView.getChildren().addAll(curve, pointer, text);
+            }else {
+                Character output;
+                if (dfa instanceof MealyDFA) {
+                    output = ((MealyDFA) dfa).getOutFunction(state, input);
+                } else {
+                    output = ((MooreDFA) dfa).getOutFunction(state);
+                }
+                transGraphics.get(curv).getSecond().setText(input + "/" + output);
+            }
+        }
     }
 
     public Double[] calculateDistances(Double radius, Double sx, Double sy, Double ex, Double ey) {
@@ -283,7 +343,7 @@ public class DFAController {
         Double newSX = radius * Math.cos(angle1);
         Double newSY = radius * Math.sin(angle2 - Math.PI);
 
-        Double[] output = {newSX, newSY};
+        Double[] output = { newSX, newSY };
 
         return output;
     }
@@ -299,6 +359,7 @@ public class DFAController {
         areButtonsDisabled(true);
         statesView = new Hashtable<>();
         transitionsView = new Hashtable<>();
+        transGraphics = new Hashtable<>();
     }
 
     protected class Tuple<T, U> {
