@@ -22,24 +22,35 @@ public class MealyDFA extends DFA {
     }
 
     @Override
+    public void deleteState(String state) {
+        if (states.contains(state)) {
+            outputMatrix.remove(state);
+        }
+        super.deleteState(state);
+    }
+    
+    @Override
     public void removeFromInAlphabet(char input) {
-        super.removeFromInAlphabet(input);
         if (inAlphabet.contains(input)) {
             outputMatrix.values().forEach(outputMap -> {
                 outputMap.remove(input);
             });
         }
+        super.removeFromInAlphabet(input);
     }
 
     @Override
     public void removeFromOutAlphabet(char output) {
         if (outAlphabet.contains(output)) {
             outAlphabet.remove(output);
-            outputMatrix.values().forEach(outputMap -> {
-                while (outputMap.values().contains(output)) {
-                    outputMap.values().remove(output);
+            for (String state : states) {
+                for (Character character : outputMatrix.get(state).keySet()) {
+                    if (outputMatrix.get(state).get(character) == output) {
+                        transitionMatrix.get(state).remove(character);
+                        outputMatrix.get(state).remove(character);
+                    }
                 }
-            });
+            }
         }
     }
 
@@ -78,5 +89,9 @@ public class MealyDFA extends DFA {
         }
 
         return groups;
+    }
+
+    public Map<String, Map<Character, Character>> getOutputMatrix() {
+        return outputMatrix;
     }
 }

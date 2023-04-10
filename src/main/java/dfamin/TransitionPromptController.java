@@ -60,7 +60,9 @@ public class TransitionPromptController {
 
         Character output = outputText.getText().charAt(0);
 
-        if (dfa.getInAlphabet().contains(input) && dfa.getOutAlphabet().contains(output)) {
+        boolean cond = dfa.getTransitionMatrix().get(pendingTransition.get(0)).get(input) == null;
+        
+        if (cond && dfa.getInAlphabet().contains(input) && dfa.getOutAlphabet().contains(output)) {
             dfa.setTransFunction(pendingTransition.get(0), input, pendingTransition.get(1));
             if (!outputText.isDisable()) {
                 dfa.setOutFunction(pendingTransition.get(0), input, output);

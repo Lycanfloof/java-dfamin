@@ -188,6 +188,10 @@ public class DFAController {
                     }
                     pendingTransition.clear();
                 }
+            }else {
+                System.out.println(dfa.getStates().toString());
+                System.out.println(dfa.getTransitionMatrix().toString());
+                System.out.println(((MealyDFA) dfa).getOutputMatrix().toString());
             }
         }
     }
@@ -254,11 +258,18 @@ public class DFAController {
 
             statesView.remove(n);
 
-            for (Tuple<String, Character> tuple : transitionsView.values()) {
+            ArrayList<QuadCurve> deletedElements = new ArrayList<>();
+
+            for (QuadCurve q : transitionsView.keySet()) {
+                Tuple<String, Character> tuple = transitionsView.get(q);
                 if (tuple.getFirst() == id) {
-                    transitionsView.values().remove(tuple);
+                    deletedElements.add(q);
                 }
             }
+            
+            deletedElements.forEach(elem -> {
+                transitionsView.remove(elem);
+            });
         }
     }
 
@@ -320,14 +331,6 @@ public class DFAController {
                 transGraphics.put(curve, new Tuple<>(pointer, text));
 
                 machineView.getChildren().addAll(curve, pointer, text);
-            }else {
-                Character output;
-                if (dfa instanceof MealyDFA) {
-                    output = ((MealyDFA) dfa).getOutFunction(state, input);
-                } else {
-                    output = ((MooreDFA) dfa).getOutFunction(state);
-                }
-                transGraphics.get(curv).getSecond().setText(input + "/" + output);
             }
         }
     }
@@ -349,7 +352,7 @@ public class DFAController {
     }
 
     private void removeTransition() {
-
+        
     }
 
     @FXML
