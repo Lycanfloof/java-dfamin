@@ -226,7 +226,7 @@ public class DFAController {
             ArrayList<String> ls = new ArrayList<>();
 
             pendingTransition.forEach(circle -> {
-                ls.add(statesView.get(circle).getText());
+                ls.add(statesView.get(circle).getText().split("/")[0]);
             });
 
             controller.setPendingTransition(ls);
@@ -294,10 +294,7 @@ public class DFAController {
 
     private void deleteState(Node n) {
         if (dfa != null) {
-            String id = statesView.get(n).getText();
-            if (dfa instanceof MooreDFA) {
-                id = id.split("/")[0];
-            }
+            String id = statesView.get(n).getText().split("/")[0];
             dfa.deleteState(id);
 
             machineView.getChildren().remove(n);
@@ -324,7 +321,7 @@ public class DFAController {
         Circle sourceCircle = pendingTransition.get(0);
         Circle destinationCircle = pendingTransition.get(1);
 
-        String state = statesView.get(sourceCircle).getText();
+        String state = statesView.get(sourceCircle).getText().split("/")[0];
 
         QuadCurve curv = null;
         

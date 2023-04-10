@@ -58,7 +58,7 @@ public class TransitionPromptController {
         Character input = (!inputText.getText().isBlank()) ? inputText.getText().charAt(0) : null;
         Character output = (!outputText.getText().isBlank()) ? outputText.getText().charAt(0) : null;
 
-        if (input != null && output != null) {
+        if (input != null && (output != null || outputText.isDisable())) {
             pendingInput.clear();
             pendingInput.add(input);
             boolean cond = dfa.getTransitionMatrix().get(pendingTransition.get(0)).get(input) == null;
