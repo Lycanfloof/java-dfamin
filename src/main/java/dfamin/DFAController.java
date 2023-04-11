@@ -54,7 +54,7 @@ public class DFAController {
 
     @FXML
     private Button stateButton;
-    
+
     @FXML
     private Button initialStateButton;
 
@@ -183,7 +183,8 @@ public class DFAController {
     }
 
     // This seriously NEEDS refactoring (Everything NEEDS refactoring, heck).
-    // ALERT! ALERT! THIS WHOLE PROGRAM IS SPAGHETTI CODE! (I needed to get this done really quickly lol).
+    // ALERT! ALERT! THIS WHOLE PROGRAM IS SPAGHETTI CODE! (I needed to get this
+    // done really quickly lol).
     @FXML
     void machineViewClick(MouseEvent event) throws IOException {
         Node n = event.getPickResult().getIntersectedNode();
@@ -206,7 +207,11 @@ public class DFAController {
                     }
                     pendingTransition.clear();
                 }
-            }else {
+            } else if (event.getButton() == MouseButton.SECONDARY) {
+                if (n instanceof QuadCurve) {
+                    removeTransition((QuadCurve) n);
+                }
+            } else {
                 System.out.println(dfa.getStates().toString());
                 System.out.println(dfa.getTransitionMatrix().toString());
                 if (dfa instanceof MealyDFA) {
@@ -232,7 +237,8 @@ public class DFAController {
         }
     }
 
-    @FXML void clearTransition(MouseEvent event) {
+    @FXML
+    void clearTransition(MouseEvent event) {
         pendingTransition.clear();
     }
 
@@ -283,7 +289,7 @@ public class DFAController {
                 }
                 gText += "/" + ((MooreDFA) dfa).getOutFunction(id);
             }
-            
+
             dfa.addState(id, new Hashtable<>(), new Hashtable<>());
             stateCount++;
 
@@ -306,7 +312,7 @@ public class DFAController {
         StatePromptController controller = ((StatePromptController) loader.getController());
         controller.setDfa(dfa);
         controller.setState(state);
-        
+
         Stage newStage = new Stage();
         newStage.setScene(new Scene(root));
         newStage.initModality(Modality.APPLICATION_MODAL);
@@ -331,7 +337,7 @@ public class DFAController {
                     deletedElements.add(q);
                 }
             }
-            
+
             deletedElements.forEach(elem -> {
                 transitionsView.remove(elem);
             });
@@ -345,7 +351,7 @@ public class DFAController {
         String state = statesView.get(sourceCircle).getText().split("/")[0];
 
         QuadCurve curv = null;
-        
+
         for (QuadCurve q : transitionsView.keySet()) {
             Tuple<String, Character> t = transitionsView.get(q);
             String st = t.getFirst();
@@ -355,7 +361,7 @@ public class DFAController {
                 break;
             }
         }
-        
+
         if (dfa.getTransitionMatrix().get(state).get(input) != null) {
             if (curv == null) {
                 Double sx = sourceCircle.getCenterX();
@@ -369,7 +375,7 @@ public class DFAController {
                 QuadCurve curve = new QuadCurve(sx + out1[0], sy - out1[1], x, y, ex + out2[0], ey - out2[1]);
                 curve.setFill(null);
                 curve.setStroke(Color.BLACK);
-                curve.setStrokeWidth(1);
+                curve.setStrokeWidth(2);
 
                 transitionsView.put(curve, new Tuple<String, Character>(state, input));
 
@@ -418,8 +424,22 @@ public class DFAController {
         return output;
     }
 
-    private void removeTransition() {
+    private void removeTransition(QuadCurve curve) {
+        Tuple<String, Character> t = transitionsView.get(curve);
+        dfa.getTransitionMatrix().get(t.getFirst()).remove(t.getSecond());
+
+        if (dfa instanceof MealyDFA) {
+            ((MealyDFA) dfa).getOutputMatrix().get(t.getFirst()).remove(t.getSecond());
+        }
         
+        Tuple<Circle, Text> graphics = transGraphics.get(curve);
+        graphics.getFirst();
+        graphics.getSecond();
+
+        machineView.getChildren().removeAll(graphics.getFirst(), graphics.getSecond(), curve);
+
+        transitionsView.remove(curve);
+        transGraphics.remove(curve);
     }
 
     @FXML
