@@ -322,25 +322,25 @@ public class DFAController {
     private void deleteState(Node n) {
         if (dfa != null) {
             String id = statesView.get(n).getText().split("/")[0];
+            ArrayList<QuadCurve> deletedElements = new ArrayList<>();
+
+            for (QuadCurve q : transitionsView.keySet()) {
+                Tuple<String, Character> tuple = transitionsView.get(q);
+                if (tuple.getFirst() == id || dfa.getTransitionMatrix().get(tuple.getFirst()).get(tuple.getSecond()) == id) {
+                    deletedElements.add(q);
+                }
+            }
+
+            deletedElements.forEach(elem -> {
+                removeTransition(elem);
+            });
+
             dfa.deleteState(id);
 
             machineView.getChildren().remove(n);
             machineView.getChildren().remove(statesView.get(n));
 
             statesView.remove(n);
-
-            ArrayList<QuadCurve> deletedElements = new ArrayList<>();
-
-            for (QuadCurve q : transitionsView.keySet()) {
-                Tuple<String, Character> tuple = transitionsView.get(q);
-                if (tuple.getFirst() == id) {
-                    deletedElements.add(q);
-                }
-            }
-
-            deletedElements.forEach(elem -> {
-                transitionsView.remove(elem);
-            });
         }
     }
 
@@ -433,8 +433,6 @@ public class DFAController {
         }
         
         Tuple<Circle, Text> graphics = transGraphics.get(curve);
-        graphics.getFirst();
-        graphics.getSecond();
 
         machineView.getChildren().removeAll(graphics.getFirst(), graphics.getSecond(), curve);
 
