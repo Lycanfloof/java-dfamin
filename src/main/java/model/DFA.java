@@ -1,6 +1,7 @@
 package model;
 
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -110,7 +111,7 @@ public abstract class DFA {
     public abstract void setOutFunction(String state, Character input, Character output);
 
     public void minimizeFDA() {
-        if (!states.isEmpty()) {
+        if (!states.isEmpty() && initialState != null) {
             deleteStateCollection(getUnreachableStates());
             List<List<String>> initialPartition = getZeroEquivalentPartitions();
             List<List<String>> partition = getEquivalentPartitions(initialPartition);
@@ -163,28 +164,31 @@ public abstract class DFA {
         do {
             oldPartition = newPartition;
             matrix = getTransitionMatrixWithPartitions(oldPartition);
-            newPartition = getKEquivalentPartition(matrix);
+            newPartition = getKEquivalentPartition(oldPartition, matrix);
         } while (!oldPartition.equals(newPartition));
+        transitionMatrix = matrix;
         return newPartition;
     }
 
     protected Map<String, Map<Character, String>> getTransitionMatrixWithPartitions(List<List<String>> partition) {
-        Map<String, Map<Character, String>> matrixCopy = Map.copyOf(transitionMatrix);
-        matrixCopy.clear();
+        Map<String, Map<Character, String>> matrixCopy = new Hashtable<>();
         for (String state : states) {
-            Map<Character, String> newCopy = Map.copyOf(transitionMatrix.get(state));
+            Map<Character, String> tFunctions = transitionMatrix.get(state);
+            Map<Character, String> newCopy = new Hashtable<>();
+
             for (Character input : inAlphabet) {
-                if (newCopy.keySet().contains(input)) {
-                    String group = AuxMethods.getGroupInMatrix(newCopy.get(input), partition);
+                if (tFunctions.keySet().contains(input)) {
+                    String group = AuxMethods.getGroupInMatrix(tFunctions.get(input), partition);
                     newCopy.put(input, group);
                 }
             }
+
             matrixCopy.put(state, newCopy);
         }
         return matrixCopy;
     }
 
-    protected List<List<String>> getKEquivalentPartition(Map<String, Map<Character, String>> matrix) {
+    protected List<List<String>> getKEquivalentPartition(List<List<String>> partition, Map<String, Map<Character, String>> matrix) {
         List<List<String>> groups = new LinkedList<>();
 
         for (String i : states) {
@@ -197,7 +201,12 @@ public abstract class DFA {
                 for (String j : states) {
                     Map<Character, String> transitionMapJ = matrix.get(j);
 
-                    if (i != j && transitionMapI.equals(transitionMapJ)) {
+                    String iGroup = AuxMethods.getGroupInMatrix(i, partition);
+                    String jGroup = AuxMethods.getGroupInMatrix(j, partition);
+
+                    boolean inSamePartition = iGroup.equals(jGroup);
+
+                    if (i != j && transitionMapI.equals(transitionMapJ) && inSamePartition) {
                         newGroup.add(j);
                     }
                 }

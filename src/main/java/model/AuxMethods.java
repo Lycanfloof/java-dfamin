@@ -15,7 +15,7 @@ public class AuxMethods {
     public static String getGroupInMatrix(String element, List<List<String>> matrix) {
         for (List<String> collection : matrix) {
             if (collection.contains(element)) {
-                return String.valueOf(matrix.indexOf(collection));
+                return String.valueOf(collection.get(0));
             }
         }
         return "-1";
