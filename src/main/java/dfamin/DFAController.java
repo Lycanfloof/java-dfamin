@@ -3,7 +3,6 @@ package dfamin;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -171,6 +170,51 @@ public class DFAController {
         }
         
         dfa.setTransitionMatrix(copyNewTransM);
+
+        for (String state : dfa.getStates()) {
+            Map<Character, String> tFunctions = dfa.getTransitionMatrix().get(state);
+            for (Character input : tFunctions.keySet()) {
+                boolean found = false;
+                for (QuadCurve quadCurve : transitionsView.keySet()) {
+                    Tuple<String, Character> t = transitionsView.get(quadCurve);
+                    if (t.getFirst().equals(state) && t.getSecond().equals(input)) {
+                        found = true;
+                    }
+                }
+                if (!found) {
+                    Circle c1 = findCircleWithState(state);
+                    Circle c2 = findCircleWithState(dfa.getTransitionMatrix().get(state).get(input));
+                    pendingTransition.add(c1);
+                    pendingTransition.add(c2);
+                    if (c1.equals(c2)) {
+                        addTransitionInView(input, c1.getCenterX() + 75, c1.getCenterY());
+                    }else {
+                        Double c1X = c1.getCenterX();
+                        Double c1Y = c1.getCenterY();
+                        Double c2X = c2.getCenterX();
+                        Double c2Y = c2.getCenterY();
+
+                        Double startX = (c1X < c2X) ? c1X : c2X;
+                        Double startY = (c1Y < c2Y) ? c1Y : c2Y;
+
+                        Double distX = Math.abs(c2X - c1X) / 2;
+                        Double distY = Math.abs(c2Y - c1Y) / 2;
+
+                        addTransitionInView(input, startX + distX, startY + distY);
+                    }
+                    pendingTransition.clear();
+                }
+            }
+        }
+    }
+
+    private Circle findCircleWithState(String state) {
+        for (Circle circle : statesView.keySet()) {
+            if (statesView.get(circle).getText().split("/")[0].equals(state)) {
+                return circle;
+            }
+        }
+        return null;
     }
 
     @FXML
