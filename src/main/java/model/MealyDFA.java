@@ -45,7 +45,7 @@ public class MealyDFA extends DFA {
             outAlphabet.remove(output);
             for (String state : states) {
                 for (Character character : outputMatrix.get(state).keySet()) {
-                    if (outputMatrix.get(state).get(character) == output) {
+                    if (outputMatrix.get(state).get(character).equals(output)) {
                         transitionMatrix.get(state).remove(character);
                         outputMatrix.get(state).remove(character);
                     }

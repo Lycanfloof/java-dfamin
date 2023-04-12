@@ -357,7 +357,7 @@ public class DFAController {
 
             for (QuadCurve q : transitionsView.keySet()) {
                 Tuple<String, Character> tuple = transitionsView.get(q);
-                if (tuple.getFirst().equals(id) || dfa.getTransitionMatrix().get(tuple.getFirst()).get(tuple.getSecond()) == id) {
+                if (tuple.getFirst().equals(id) || dfa.getTransitionMatrix().get(tuple.getFirst()).get(tuple.getSecond()).equals(id)) {
                     deletedElements.add(q);
                 }
             }
@@ -389,7 +389,7 @@ public class DFAController {
             Tuple<String, Character> t = transitionsView.get(q);
             String st = t.getFirst();
             Character in = t.getSecond();
-            if (state == st && in == input) {
+            if (state.equals(st) && in.equals(input)) {
                 curv = q;
                 break;
             }
