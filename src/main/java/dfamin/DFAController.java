@@ -3,6 +3,7 @@ package dfamin;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -135,10 +136,29 @@ public class DFAController {
         outputLabel.setText(dfa.getOutAlphabet().toString());
     }
 
+    //Known issue: The transition function of deleted states stays in the DFA.
     @FXML
     private void minimizeFDA(ActionEvent event) {
         if (dfa != null) {
-            dfa.minimizeFDA();
+            Map<String, Map<Character, String>> previous = dfa.getTransitionMatrix();
+            Collection<String> deleted = dfa.getDeletedFromMinimization();
+            Map<String, Map<Character, String>> after = dfa.getTransitionMatrix();
+            
+            dfa.setTransitionMatrix(previous);
+
+            ArrayList<Circle> toDeleteInView = new ArrayList<>();
+
+            for (Circle circle : statesView.keySet()) {
+                if (deleted.contains(statesView.get(circle).getText().split("/")[0])) {
+                    toDeleteInView.add(circle);
+                }
+            }
+
+            for (Circle circle : toDeleteInView) {
+                deleteState(circle);
+            }
+
+            dfa.setTransitionMatrix(after);
         }
     }
 

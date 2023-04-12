@@ -42,6 +42,10 @@ public abstract class DFA {
         return transitionMatrix;
     }
 
+    public void setTransitionMatrix(Map<String, Map<Character, String>> transitionMatrix) {
+        this.transitionMatrix = transitionMatrix;
+    }
+
     // Needs to be overwritten in the implementations. Parameter "outputMap" might not be used.
     public void addState(String state, Map<Character, String> transitionMap, Map<Character, Character> outputMap) {
         if (!states.contains(state)) {
@@ -120,6 +124,20 @@ public abstract class DFA {
                 deleteStateCollection(group);
             });
         }
+    }
+
+    public Collection<String> getDeletedFromMinimization() {
+        if (!states.isEmpty() && initialState != null) {
+            Collection<String> unreachable = getUnreachableStates();
+            List<List<String>> initialPartition = getZeroEquivalentPartitions();
+            List<List<String>> partition = getEquivalentPartitions(initialPartition);
+            partition.forEach(group -> {
+                group.remove(0);
+                unreachable.addAll(group);
+            });
+            return unreachable;
+        }
+        return null;
     }
 
     protected Collection<String> getUnreachableStates() {
