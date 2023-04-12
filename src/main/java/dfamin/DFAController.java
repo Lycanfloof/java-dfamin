@@ -124,9 +124,9 @@ public class DFAController {
         stateButton.setDisable(isDisabled);
         transitionButton.setDisable(isDisabled);
         addInputButton.setDisable(isDisabled);
-        removeInputButton.setDisable(isDisabled);
+        //removeInputButton.setDisable(isDisabled);
         addOutputButton.setDisable(isDisabled);
-        removeOutputButton.setDisable(isDisabled);
+        //removeOutputButton.setDisable(isDisabled);
         initialStateButton.setDisable(isDisabled);
     }
 
@@ -523,6 +523,8 @@ public class DFAController {
     void initialize() {
         stateCount = 0;
         areButtonsDisabled(true);
+        removeInputButton.setDisable(true);
+        removeOutputButton.setDisable(true);
 
         pendingTransition = new ArrayList<>();
         statesView = new Hashtable<>();

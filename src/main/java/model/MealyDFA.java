@@ -44,11 +44,17 @@ public class MealyDFA extends DFA {
         if (outAlphabet.contains(output)) {
             outAlphabet.remove(output);
             for (String state : states) {
+                Collection<Character> toBeDeleted = new LinkedList<>();
+                
                 for (Character character : outputMatrix.get(state).keySet()) {
                     if (outputMatrix.get(state).get(character).equals(output)) {
-                        transitionMatrix.get(state).remove(character);
-                        outputMatrix.get(state).remove(character);
+                        toBeDeleted.add(character);
                     }
+                }
+
+                for (Character character : toBeDeleted) {
+                    transitionMatrix.get(state).remove(character);
+                    outputMatrix.get(state).remove(character);
                 }
             }
         }
