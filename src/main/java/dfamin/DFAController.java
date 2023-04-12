@@ -139,27 +139,38 @@ public class DFAController {
     //Known issue: The transition function of deleted states stays in the DFA.
     @FXML
     private void minimizeFDA(ActionEvent event) {
-        if (dfa != null) {
-            Map<String, Map<Character, String>> previous = dfa.getTransitionMatrix();
-            Collection<String> deleted = dfa.getDeletedFromMinimization();
-            Map<String, Map<Character, String>> after = dfa.getTransitionMatrix();
-            
-            dfa.setTransitionMatrix(previous);
+        Map<String, Map<Character, String>> matrixCopy = new Hashtable<>();
+        for (String state : dfa.getStates()) {
+            Map<Character, String> tFunctions = dfa.getTransitionMatrix().get(state);
+            Map<Character, String> newCopy = new Hashtable<>();
 
-            ArrayList<Circle> toDeleteInView = new ArrayList<>();
-
-            for (Circle circle : statesView.keySet()) {
-                if (deleted.contains(statesView.get(circle).getText().split("/")[0])) {
-                    toDeleteInView.add(circle);
+            for (Character input : dfa.getInAlphabet()) {
+                if (tFunctions.keySet().contains(input)) {
+                    newCopy.put(input, tFunctions.get(input));
                 }
             }
 
-            for (Circle circle : toDeleteInView) {
-                deleteState(circle);
-            }
-
-            dfa.setTransitionMatrix(after);
+            matrixCopy.put(state, newCopy);
         }
+
+        dfa.minimizeFDA();
+        Map<String, Map<Character, String>> copyNewTransM = dfa.getTransitionMatrix();
+
+        dfa.setTransitionMatrix(matrixCopy);
+        
+        ArrayList<Circle> pendingDelete = new ArrayList<>();
+
+        for (Circle circle : statesView.keySet()) {
+            if (!dfa.getStates().contains(statesView.get(circle).getText().split("/")[0])) {
+                pendingDelete.add(circle);
+            }
+        }
+
+        for (Circle circle : pendingDelete) {
+            deleteState(circle, false);
+        }
+        
+        dfa.setTransitionMatrix(copyNewTransM);
     }
 
     @FXML
@@ -213,7 +224,7 @@ public class DFAController {
                 addState(event.getX(), event.getY());
             } else if (event.getButton() == MouseButton.SECONDARY) {
                 if (n instanceof Circle) {
-                    deleteState(n);
+                    deleteState(n, true);
                 }
             }
         } else if (transitionButton.isFocused()) {
@@ -229,7 +240,7 @@ public class DFAController {
                 }
             } else if (event.getButton() == MouseButton.SECONDARY) {
                 if (n instanceof QuadCurve) {
-                    removeTransition((QuadCurve) n);
+                    removeTransition((QuadCurve) n, true);
                 }
             } else {
                 System.out.println(dfa.getStates().toString());
@@ -339,23 +350,25 @@ public class DFAController {
         newStage.showAndWait();
     }
 
-    private void deleteState(Node n) {
+    private void deleteState(Node n, boolean isChangingModel) {
         if (dfa != null) {
             String id = statesView.get(n).getText().split("/")[0];
             ArrayList<QuadCurve> deletedElements = new ArrayList<>();
 
             for (QuadCurve q : transitionsView.keySet()) {
                 Tuple<String, Character> tuple = transitionsView.get(q);
-                if (tuple.getFirst() == id || dfa.getTransitionMatrix().get(tuple.getFirst()).get(tuple.getSecond()) == id) {
+                if (tuple.getFirst().equals(id) || dfa.getTransitionMatrix().get(tuple.getFirst()).get(tuple.getSecond()) == id) {
                     deletedElements.add(q);
                 }
             }
 
             deletedElements.forEach(elem -> {
-                removeTransition(elem);
+                removeTransition(elem, isChangingModel);
             });
 
-            dfa.deleteState(id);
+            if (isChangingModel) {
+                dfa.deleteState(id);
+            }
 
             machineView.getChildren().remove(n);
             machineView.getChildren().remove(statesView.get(n));
@@ -444,11 +457,13 @@ public class DFAController {
         return output;
     }
 
-    private void removeTransition(QuadCurve curve) {
+    private void removeTransition(QuadCurve curve, boolean isChangingModel) {
         Tuple<String, Character> t = transitionsView.get(curve);
-        dfa.getTransitionMatrix().get(t.getFirst()).remove(t.getSecond());
+        if (isChangingModel) {
+            dfa.getTransitionMatrix().get(t.getFirst()).remove(t.getSecond());
+        }
 
-        if (dfa instanceof MealyDFA) {
+        if (dfa instanceof MealyDFA && isChangingModel) {
             ((MealyDFA) dfa).getOutputMatrix().get(t.getFirst()).remove(t.getSecond());
         }
         

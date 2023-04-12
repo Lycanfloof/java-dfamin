@@ -126,20 +126,6 @@ public abstract class DFA {
         }
     }
 
-    public Collection<String> getDeletedFromMinimization() {
-        if (!states.isEmpty() && initialState != null) {
-            Collection<String> unreachable = getUnreachableStates();
-            List<List<String>> initialPartition = getZeroEquivalentPartitions();
-            List<List<String>> partition = getEquivalentPartitions(initialPartition);
-            partition.forEach(group -> {
-                group.remove(0);
-                unreachable.addAll(group);
-            });
-            return unreachable;
-        }
-        return null;
-    }
-
     protected Collection<String> getUnreachableStates() {
         Collection<String> reachableStates = getReachableStates();
         Collection<String> unreachableStates = new LinkedList<>();
