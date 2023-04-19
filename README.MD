@@ -1,6 +1,6 @@
 # DFA Minimization Software
 
-*dfamin* is a tool developed to create and minimize deterministic finite-state machines, featuring a graphical user interface!
+*dfamin* is a tool developed to create and minimize deterministic finite-state machines, featuring a graphical user interface! (You can access the GitHub repository through [this link](https://github.com/Lycanfloof/java-dfamin)).
 
 ## Development Features
 
